@@ -1,14 +1,15 @@
 name: kagayaku_modules
-description: A starting point for Dart libraries or applications.
+description: Source modules for the kagayaku app.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/Zerolmntrix/kagayaku-modules
+publish_to: 'none'
 
 environment:
   sdk: ^3.0.6
 
-# Add regular dependencies here.
 dependencies:
-  # path: ^1.8.0
+  http: ^1.1.0
+  html: ^0.15.4
 
 dev_dependencies:
   lints: ^2.1.1
