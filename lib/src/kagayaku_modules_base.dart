@@ -1,69 +1,173 @@
-import 'package:html/dom.dart';
-import 'package:html/parser.dart';
-import 'package:http/http.dart' as http;
-import 'package:kagayaku_modules/src/utils/validations.dart';
+import 'package:kagayaku_modules/src/models/novel.dart';
+import 'package:kagayaku_modules/src/utils/web_scraper.dart';
 
-typedef DataList = List<Map<String, dynamic>>;
+typedef NovelFunction = Future<List<NovelModel>>;
 
-class WebScraper {
-  WebScraper(this._baseUrl) {
-    final result = Validation.isBaseURL(_baseUrl);
-
-    if (!result.isCorrect) throw Exception(result.description);
+class KagayakuModule {
+  KagayakuModule(this._kayaContent) {
+    _readSource();
   }
 
-  final String _baseUrl;
+  late final String sourceUrl;
+  final List<String> _kayaContent;
+  late final WebScraper _webScraper;
 
-  Document? _document;
+  NovelFunction getSpotlightNovels() async {
+    List<NovelModel> novels = await _getNovelList('getSpotlightNovels');
 
-  Future<bool> loadWebPage(String path) async {
-    final endpoint = Uri.encodeFull(_removeUnnecessarySlash(_baseUrl + path));
-
-    try {
-      final response = await http.get(Uri.parse(endpoint));
-
-      if (response.statusCode != 200) return false;
-
-      _document = parse(response.body);
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-
-    return true;
+    return novels;
   }
 
-  DataList getElement(String selector, List<String> attrs) {
-    List<Map<String, dynamic>> elementData = [];
+  NovelFunction getLatestNovels() async {
+    List<NovelModel> novels = await _getNovelList('getLatestNovels');
 
-    if (_document == null) {
-      throw Exception('getElement cannot be called before loadWebPage');
+    return novels;
+  }
+
+  NovelFunction getPopularNovels() async {
+    List<NovelModel> novels = await _getNovelList('getPopularNovels');
+
+    return novels;
+  }
+
+  getNovelDetails(String url) async {
+    final List<String> function = [];
+
+    function.addAll(_getFunctionContent('getNovelDetails'));
+
+    if (function.isEmpty) return;
+
+    if (!await _webScraper.loadWebPage(url)) throw Exception('Failed to load');
+  }
+
+  NovelFunction _getNovelList(String name) async {
+    List<NovelModel> novels = [];
+    final List<String> function = [];
+
+    function.addAll(_getFunctionContent(name));
+
+    if (function.isEmpty) return novels;
+
+    final String? url = _getPageUrl(function);
+
+    if (url == null) return novels;
+
+    if (!await _webScraper.loadWebPage(url)) throw Exception('Failed to load');
+
+    final selectors = _getSelectors(function);
+
+    final sCover = selectors['cover'];
+    final sTitle = selectors['title'];
+    final sLink = selectors['link'];
+
+    final DataList covers = _webScraper.getElement(sCover[0], [sCover[1]]);
+    final DataList titles = _webScraper.getElement(sTitle[0], [sTitle[1]]);
+    final DataList links = _webScraper.getElement(sLink[0], [sLink[1]]);
+
+    for (int i = 0; i < covers.length; i++) {
+      final String cover = covers[i]['attributes'][sCover[1]];
+      final String title = titles[i]['text'];
+      final String link = links[i]['attributes'][sLink[1]];
+
+      novels.add(NovelModel(
+        title: title,
+        cover: cover,
+        url: link,
+      ));
     }
 
-    //? Using query selector to get a list of particular element.
-    List<Element> elements = _document!.querySelectorAll(selector);
+    return novels;
+  }
 
-    for (final element in elements) {
-      final Map<String, dynamic> attrData = {};
-
-      for (final attr in attrs) {
-        attrData.addEntries([MapEntry(attr, element.attributes[attr])]);
+  void _readSource() async {
+    for (String line in _kayaContent) {
+      if (line.startsWith('@source')) {
+        final baseUrl = line.substring('@source'.length).trim();
+        _webScraper = WebScraper(_removeQuotes(baseUrl));
+        sourceUrl = _removeQuotes(baseUrl);
+        break;
       }
-
-      elementData.add({
-        'text': element.text,
-        'attributes': attrData,
-        'element': element,
-      });
     }
-    return elementData;
   }
 
-  String _removeUnnecessarySlash(String url) {
-    RegExp regex = RegExp(r"/{2,}");
-    final splitedUrl = url.split("://");
-    final protocol = splitedUrl[0];
-    final resultUrl = splitedUrl[1].replaceAll(regex, "/");
+  String _removeQuotes(String str) {
+    if (str.length <= 2) return "";
 
-    return "$protocol://$resultUrl";
+    return str.substring(1, str.length - 1);
+  }
+
+  List<String> _getFunctionContent(String name) {
+    List<String> functionContent = [];
+    bool canAdd = false;
+
+    final isNull = _kayaContent.where(_isReturnNull).toList();
+
+    if (isNull.isNotEmpty) return functionContent;
+
+    for (String line in _kayaContent) {
+      if (line.startsWith('@fun $name(')) {
+        for (String funcLine in _kayaContent) {
+          if (funcLine.startsWith('@fun $name(')) {
+            canAdd = true;
+            continue;
+          }
+          if (canAdd && funcLine.startsWith('@return')) {
+            canAdd = false;
+            break;
+          }
+          if (canAdd) functionContent.add(funcLine);
+        }
+        break;
+      }
+    }
+
+    return functionContent;
+  }
+
+  bool _isReturnNull(String line) {
+    if (!line.startsWith('@return')) return false;
+    final returnLine = line.substring('@return'.length).trim().toLowerCase();
+    if (returnLine.contains('null')) return true;
+
+    return false;
+  }
+
+  String? _getPageUrl(List<String> function) {
+    String? url;
+
+    for (String line in function) {
+      if (line.startsWith('@url')) {
+        url = line.substring('@url'.length).trim();
+        break;
+      }
+    }
+
+    if (url == null) return null;
+
+    return _removeQuotes(url);
+  }
+
+  Map<String, dynamic> _getSelectors(List<String> function) {
+    Map<String, dynamic> selectors = {};
+
+    for (String line in function) {
+      if (line.contains('@selector')) {
+        final String selectorLine = line.substring('@var'.length).trim();
+        final List<String> parts = selectorLine.split('->');
+        final String key = parts[0].trim();
+        final String value = _removeQuotes(
+          parts[1].trim().substring('@selector'.length).trim(),
+        );
+
+        final List<String> valueParts = '$value@'.trim().split('@');
+
+        final String selector = valueParts[0].trim();
+        final String attribute = valueParts[1].trim();
+
+        selectors[key] = [selector, attribute];
+      }
+    }
+
+    return selectors;
   }
 }

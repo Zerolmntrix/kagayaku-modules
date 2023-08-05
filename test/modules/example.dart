@@ -4,34 +4,34 @@
 
 //! You need to put the module_name_test.dart file in the test/modules folder.
 
-import 'package:kagayaku_modules/src/source_data.dart';
+import 'package:kagayaku_modules/src/kagayaku_modules_base.dart';
 import 'package:test/test.dart';
 
 import '../utils/methods.dart';
 
 void main() async {
-  late SourceData sourceData;
+  late KagayakuModule module;
   setUp(() async {
     // You need to put your module id here. lang.module
-    final module = await getModuleFromFile('en.yourmodule');
+    final source = await getSourceFromFile('en.yourmodule');
 
-    sourceData = SourceData(module);
+    module = KagayakuModule(source);
   });
 
   group('Your Module Name', () {
     group('Lists', () {
       test('Spotlight', () async {
-        final novels = await sourceData.getSpotlightNovels();
+        final novels = await module.getSpotlightNovels();
 
         isOk(novels);
       });
       test('Latest', () async {
-        final novels = await sourceData.getLatestNovels();
+        final novels = await module.getLatestNovels();
 
         isOk(novels);
       });
       test('Popular', () async {
-        final novels = await sourceData.getPopularNovels();
+        final novels = await module.getPopularNovels();
 
         isOk(novels);
       });

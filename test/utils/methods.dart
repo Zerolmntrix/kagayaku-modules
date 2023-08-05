@@ -9,7 +9,7 @@ isNovelNotEmpty(NovelModel novel) {
   expect(novel.url, isNotEmpty);
 }
 
-Future<List<String>> getModuleFromFile(String moduleId) async {
+Future<List<String>> getSourceFromFile(String moduleId) async {
   final id = moduleId.split('.');
   final language = id[0];
   final name = id[1];
