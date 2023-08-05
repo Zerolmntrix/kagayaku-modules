@@ -7,4 +7,3 @@ class NovelModel {
 }
 
 typedef GetNovel = Future<List<NovelModel>>;
-typedef DataList = List<Map<String, dynamic>>;
