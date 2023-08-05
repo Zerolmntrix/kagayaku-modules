@@ -5,6 +5,7 @@
 //! You need to put the module_name_test.dart file in the test/modules folder.
 
 import 'package:kagayaku_modules/src/kagayaku_modules_base.dart';
+import 'package:kagayaku_modules/src/utils/get_source.dart';
 import 'package:test/test.dart';
 
 import '../utils/methods.dart';
