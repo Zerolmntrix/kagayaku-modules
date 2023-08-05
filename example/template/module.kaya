@@ -1,0 +1,71 @@
+// TODO: Remove the comments and create a website with the documentation
+
+// Copy this file to create your module
+
+// You can test your module in the folder test
+
+// Your functions need to be exactly like the example below
+
+// You need to put the protocol [http or https] in the url
+@source "https://www.example.com/"
+
+// The states available in the application are "ongoing", "completed", "cancelled", "hiatus" and "unknown"
+// You need to define which status will be displayed in the application
+
+// Like this:
+@status "publishing" -> "ongoing"
+@status "published" -> "completed"
+@status "cancelled" -> "cancelled"
+@status "hiatus" -> "hiatus"
+@status "unknown" -> "unknown"
+
+// ? If you can't find a way to get some data, just return null, except for the search function
+
+@fun getSpotlightNovels()
+  @return null
+
+@fun getLatestNovels()
+  @url "novel-tag/latest/"
+    @var title -> @selector ".novel-list .novel-item"
+    @var link -> @selector "h3 a@href"
+    @var cover -> @selector ".novel-item-img img@src"
+  @return Novel()
+
+// ! You can't get the title using an attribute, you can only get it from a tag that contains the title
+
+@fun getPopularNovels()
+  @url "novel-tag/hot/"
+    @var title -> @selector ".novel-list .novel-item"
+    @var link -> @selector "h3 a@href"
+    @var cover -> @selector ".novel-item-img img@src"
+  @return Novel()
+
+// ? You can use the @by url or @by page to specify how to get the data
+// The method for page is not implemented yet
+@fun getNovelsBySearch(@arg name) @by url
+  @url "search/?keyword=@arg[name]"
+    @var title -> @selector ".novel-list .novel-item"
+    @var link -> @selector "h3 a@href"
+    @var cover -> @selector ".novel-item-img img@src"
+  @return Novel()
+
+
+@fun getNovelDetails(@arg url)
+  @url @arg[url]
+    @var title -> @selector ".novel-info .novel-title"
+    @var cover -> @selector ".novel-info .novel-img img@src"
+    @var author -> @selector ".novel-info .novel-author"
+    @var status -> @selector ".novel-info .novel-status"
+    // ? For genres, you need to provide a selector for a single genre. same for chapters
+    // Like ".novel-info .novel-genres .genre" instead of ".novel-info .novel-genres"
+    @var genres -> @selector ".novel-info .novel-genres .genre"
+    @var description -> @selector ".novel-info .novel-intro"
+    // Here you need to provide a selector that contains the a single chapter like in the genres
+    @var chapters -> @selector ".chapter-list .row"
+    // These will be sought within each chapter
+    @var chapterName -> @selector "a"
+    @var chapterLink -> @selector "a@href"
+    @var chapterDate -> @selector ".chapter-time"
+  @return NovelDetails()
+
+
