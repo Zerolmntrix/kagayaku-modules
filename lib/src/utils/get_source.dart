@@ -5,8 +5,8 @@ Future<List<String>> getSourceFromFile(String path) async {
   final sourceContent = await module.readAsLines();
 
   final sourceContentList = sourceContent
-      .where((element) => element.isNotEmpty)
-      .where((element) => !element.startsWith('//'))
+      .where((line) => line.isNotEmpty)
+      .where((line) => !line.startsWith('//'))
       .map((e) => e.trim())
       .toList();
 

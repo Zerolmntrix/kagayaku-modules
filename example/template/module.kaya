@@ -8,9 +8,6 @@
 
 // Your functions need to be exactly like the example below
 
-// You need to put the protocol [http or https] in the url
-@source "https://www.example.com/"
-
 // The states available in the application are "ongoing", "completed", "cancelled", "hiatus" and "unknown"
 // You need to define which status will be displayed in the application
 

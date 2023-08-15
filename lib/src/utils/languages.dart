@@ -1,5 +1,5 @@
 abstract class Languages {
-  static String get(String key) => _languages[key];
+  static String get(String key) => _languages[key] ?? 'Unknown';
 
   static const Map _languages = {
     'all': 'All',

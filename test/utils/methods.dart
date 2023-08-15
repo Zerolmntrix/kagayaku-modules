@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:kagayaku_modules/src/models/module_info.dart';
 import 'package:kagayaku_modules/src/models/novel.dart';
 import 'package:test/test.dart';
 
@@ -24,6 +26,19 @@ Future<List<String>> getSourceFromFile(String moduleId) async {
       .toList();
 
   return moduleContentList;
+}
+
+Future<ModuleInfo> getDataFromJsonFile(String moduleId) async {
+  final id = moduleId.split('.');
+  final language = id[0];
+  final name = id[1];
+
+  final module = File('lib/src/modules/$language/$name/info.json');
+  final encoded = await module.readAsString();
+
+  final decoded = jsonDecode(encoded) as Map<String, dynamic>;
+
+  return ModuleInfo.fromJson(decoded);
 }
 
 isOk(List<NovelModel> novels) {

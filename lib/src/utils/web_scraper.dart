@@ -20,7 +20,7 @@ class WebScraper {
     final endpoint = Uri.encodeFull(_removeUnnecessarySlash(_baseUrl + path));
 
     try {
-      _loadStaticPage(endpoint);
+      await _loadStaticPage(endpoint);
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -58,8 +58,6 @@ class WebScraper {
     final dio = Dio();
 
     final response = await dio.get(endpoint);
-
-    print(response.statusCode.toString());
 
     if (response.statusCode != 200) throw Exception('Error loading page');
 

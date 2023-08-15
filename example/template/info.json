@@ -1,4 +1,7 @@
 {
+  "name": "ModuleName",
+  "language": "en",
+  "icon": "icon.jpg",
   "developer": "YourName",
   "baseUrl": "https://example.com"
 }

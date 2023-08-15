@@ -6,13 +6,14 @@ import 'models/novel_details.dart';
 typedef NovelFunction = Future<List<NovelModel>>;
 
 class KagayakuModule {
-  KagayakuModule(this._kayaContent) {
-    _readSource();
-  }
+  KagayakuModule(this._source, this._sourceUrl)
+      : _webScraper = WebScraper(_sourceUrl);
 
-  late final String sourceUrl;
-  final List<String> _kayaContent;
-  late final WebScraper _webScraper;
+  final String _sourceUrl;
+  final List<String> _source;
+  final WebScraper _webScraper;
+
+  String get sourceUrl => _sourceUrl;
 
   NovelFunction getSpotlightNovels() => _getNovelList('getSpotlightNovels');
 
@@ -27,7 +28,7 @@ class KagayakuModule {
 
     if (function.isEmpty) throw Exception('Failed to load');
 
-    final String url = novelUrl.replaceFirst(sourceUrl, '');
+    final String url = novelUrl.replaceFirst(_sourceUrl, '');
 
     if (!await _webScraper.loadWebPage(url)) throw Exception('Failed to load');
 
@@ -56,34 +57,23 @@ class KagayakuModule {
     final sTitle = selectors['title'];
     final sLink = selectors['link'];
 
-    // final DataList covers = _webScraper.getElement(sCover[0], [sCover[1]]);
-    // final DataList titles = _webScraper.getElement(sTitle[0], [sTitle[1]]);
-    // final DataList links = _webScraper.getElement(sLink[0], [sLink[1]]);
+    final DataList covers = _webScraper.getElement(sCover[0], [sCover[1]]);
+    final DataList titles = _webScraper.getElement(sTitle[0], [sTitle[1]]);
+    final DataList links = _webScraper.getElement(sLink[0], [sLink[1]]);
 
-    // for (int i = 0; i < covers.length; i++) {
-    //   final String cover = covers[i]['attributes'][sCover[1]];
-    //   final String title = titles[i]['text'];
-    //   final String link = links[i]['attributes'][sLink[1]];
-    //
-    //   novels.add(NovelModel(
-    //     title: title,
-    //     cover: cover,
-    //     url: link,
-    //   ));
-    // }
+    for (int i = 0; i < covers.length; i++) {
+      final String cover = covers[i]['attributes'][sCover[1]];
+      final String title = titles[i]['text'];
+      final String link = links[i]['attributes'][sLink[1]];
+
+      novels.add(NovelModel(
+        title: title,
+        cover: cover,
+        url: link,
+      ));
+    }
 
     return novels;
-  }
-
-  void _readSource() async {
-    for (String line in _kayaContent) {
-      if (line.startsWith('@source')) {
-        final baseUrl = line.substring('@source'.length).trim();
-        _webScraper = WebScraper(_removeQuotes(baseUrl));
-        sourceUrl = _removeQuotes(baseUrl);
-        break;
-      }
-    }
   }
 
   String _removeQuotes(String str) {
@@ -96,13 +86,13 @@ class KagayakuModule {
     List<String> functionContent = [];
     bool canAdd = false;
 
-    final isNull = _kayaContent.where(_isReturnNull).toList();
+    final isNull = _source.where(_isReturnNull).toList();
 
     if (isNull.isNotEmpty) return functionContent;
 
-    for (String line in _kayaContent) {
+    for (String line in _source) {
       if (line.startsWith('@fun $name(')) {
-        for (String funcLine in _kayaContent) {
+        for (String funcLine in _source) {
           if (funcLine.startsWith('@fun $name(')) {
             canAdd = true;
             continue;
