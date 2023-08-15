@@ -1,5 +1,7 @@
 // TODO: Remove the comments and create a website with the documentation
 
+// ! Case is very important, "keyword" is different from "Keyword"
+
 // Copy this file to create your module
 
 // You can test your module in the folder test
@@ -40,9 +42,10 @@
     @var cover -> @selector ".novel-item-img img@src"
   @return Novel()
 
-// ? You can use the @by url or @by page to specify how to get the data
+// The case is important, @by Url is different from @by url
+// ? You can use the @by Url or @by Page to specify how to get the data
 // The method for page is not implemented yet
-@fun getNovelsBySearch(@arg name) @by url
+@fun getNovelsBySearch(@arg name) @by Url
   @url "search/?keyword=@arg[name]"
     @var title -> @selector ".novel-list .novel-item"
     @var link -> @selector "h3 a@href"
@@ -50,7 +53,13 @@
   @return Novel()
 
 
-@fun getNovelDetails(@arg url)
+// ? You need to use Webview if the target page is dynamic or if data retrieval requires JavaScript execution
+// ? If the target page contains dynamic content that cannot be extracted using standard scraping techniques,
+// ? or if JavaScript is necessary to fetch the required data, the @use Webview annotation should be used.
+// ! Do not use the @use Webview annotation for other scenarios where regular scraping suffices.
+// ! Using Webview unnecessarily can impact performance and complexity of your module.
+
+@fun getNovelDetails(@arg url) @use WebView
   @url @arg[url]
     @var title -> @selector ".novel-info .novel-title"
     @var cover -> @selector ".novel-info .novel-img img@src"
@@ -61,6 +70,7 @@
     @var genres -> @selector ".novel-info .novel-genres .genre"
     @var description -> @selector ".novel-info .novel-intro"
     // Here you need to provide a selector that contains the a single chapter like in the genres
+    // '.chapter-list .chapter' instead of '.chapter-list'
     @var chapters -> @selector ".chapter-list .row"
     // These will be sought within each chapter
     @var chapterName -> @selector "a"

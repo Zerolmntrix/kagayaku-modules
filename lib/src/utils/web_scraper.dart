@@ -1,7 +1,7 @@
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
-import 'package:http/http.dart' as http;
-import 'package:kagayaku_modules/src/utils/validations.dart';
+import 'package:dio/dio.dart';
+import 'validations.dart';
 
 typedef DataList = List<Map<String, dynamic>>;
 
@@ -20,11 +20,7 @@ class WebScraper {
     final endpoint = Uri.encodeFull(_removeUnnecessarySlash(_baseUrl + path));
 
     try {
-      final response = await http.get(Uri.parse(endpoint));
-
-      if (response.statusCode != 200) return false;
-
-      _document = parse(response.body);
+      _loadStaticPage(endpoint);
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -56,6 +52,18 @@ class WebScraper {
       });
     }
     return elementData;
+  }
+
+  _loadStaticPage(String endpoint) async {
+    final dio = Dio();
+
+    final response = await dio.get(endpoint);
+
+    print(response.statusCode.toString());
+
+    if (response.statusCode != 200) throw Exception('Error loading page');
+
+    _document = parse(response.data);
   }
 
   String _removeUnnecessarySlash(String url) {

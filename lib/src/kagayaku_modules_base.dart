@@ -1,5 +1,7 @@
-import 'package:kagayaku_modules/src/models/novel.dart';
-import 'package:kagayaku_modules/src/utils/web_scraper.dart';
+import 'models/novel.dart';
+import 'utils/web_scraper.dart';
+
+import 'models/novel_details.dart';
 
 typedef NovelFunction = Future<List<NovelModel>>;
 
@@ -12,32 +14,26 @@ class KagayakuModule {
   final List<String> _kayaContent;
   late final WebScraper _webScraper;
 
-  NovelFunction getSpotlightNovels() async {
-    List<NovelModel> novels = await _getNovelList('getSpotlightNovels');
+  NovelFunction getSpotlightNovels() => _getNovelList('getSpotlightNovels');
 
-    return novels;
-  }
+  NovelFunction getLatestNovels() => _getNovelList('getLatestNovels');
 
-  NovelFunction getLatestNovels() async {
-    List<NovelModel> novels = await _getNovelList('getLatestNovels');
+  NovelFunction getPopularNovels() => _getNovelList('getPopularNovels');
 
-    return novels;
-  }
-
-  NovelFunction getPopularNovels() async {
-    List<NovelModel> novels = await _getNovelList('getPopularNovels');
-
-    return novels;
-  }
-
-  getNovelDetails(String url) async {
+  Future<NovelDetails> getNovelDetails(String novelUrl) async {
     final List<String> function = [];
 
     function.addAll(_getFunctionContent('getNovelDetails'));
 
-    if (function.isEmpty) return;
+    if (function.isEmpty) throw Exception('Failed to load');
+
+    final String url = novelUrl.replaceFirst(sourceUrl, '');
 
     if (!await _webScraper.loadWebPage(url)) throw Exception('Failed to load');
+
+    // final selectors = _getSelectors(function);
+
+    return NovelDetails();
   }
 
   NovelFunction _getNovelList(String name) async {
@@ -46,7 +42,7 @@ class KagayakuModule {
 
     function.addAll(_getFunctionContent(name));
 
-    if (function.isEmpty) return novels;
+    if (function.isEmpty) throw Exception('Failed to load');
 
     final String? url = _getPageUrl(function);
 
@@ -60,21 +56,21 @@ class KagayakuModule {
     final sTitle = selectors['title'];
     final sLink = selectors['link'];
 
-    final DataList covers = _webScraper.getElement(sCover[0], [sCover[1]]);
-    final DataList titles = _webScraper.getElement(sTitle[0], [sTitle[1]]);
-    final DataList links = _webScraper.getElement(sLink[0], [sLink[1]]);
+    // final DataList covers = _webScraper.getElement(sCover[0], [sCover[1]]);
+    // final DataList titles = _webScraper.getElement(sTitle[0], [sTitle[1]]);
+    // final DataList links = _webScraper.getElement(sLink[0], [sLink[1]]);
 
-    for (int i = 0; i < covers.length; i++) {
-      final String cover = covers[i]['attributes'][sCover[1]];
-      final String title = titles[i]['text'];
-      final String link = links[i]['attributes'][sLink[1]];
-
-      novels.add(NovelModel(
-        title: title,
-        cover: cover,
-        url: link,
-      ));
-    }
+    // for (int i = 0; i < covers.length; i++) {
+    //   final String cover = covers[i]['attributes'][sCover[1]];
+    //   final String title = titles[i]['text'];
+    //   final String link = links[i]['attributes'][sLink[1]];
+    //
+    //   novels.add(NovelModel(
+    //     title: title,
+    //     cover: cover,
+    //     url: link,
+    //   ));
+    // }
 
     return novels;
   }

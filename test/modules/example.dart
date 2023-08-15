@@ -4,8 +4,7 @@
 
 //! You need to put the module_name_test.dart file in the test/modules folder.
 
-import 'package:kagayaku_modules/src/kagayaku_modules_base.dart';
-import 'package:kagayaku_modules/src/utils/get_source.dart';
+import 'package:kagayaku_modules/kagayaku_modules.dart' hide getSourceFromFile;
 import 'package:test/test.dart';
 
 import '../utils/methods.dart';
@@ -38,6 +37,10 @@ void main() async {
       });
       test('Search', () async {});
     });
-    test('Novel', () async {});
+    test('Novel', () async {
+      // ? You need to provide a url to a novel in your module
+      final url = 'https://yourmodule.com/novel/your-novel/';
+      final novel = await module.getNovelDetails(url);
+    });
   });
 }

@@ -1,6 +1,6 @@
 name: kagayaku_modules
 description: Source modules for the kagayaku app.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/Zerolmntrix/kagayaku-modules
 publish_to: 'none'
 
@@ -8,9 +8,9 @@ environment:
   sdk: ^3.0.6
 
 dependencies:
-  http: ^1.1.0
+  dio: ^5.3.2
   html: ^0.15.4
 
 dev_dependencies:
   lints: ^2.1.1
-  test: ^1.24.4
+  test: ^1.24.6
