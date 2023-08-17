@@ -21,10 +21,49 @@ class KagayakuModule {
 
   NovelFunction getPopularNovels() => _getNovelList('getPopularNovels');
 
-  Future<NovelDetails> getNovelDetails(String novelUrl) async {
-    final List<String> function = [];
+  NovelFunction getNovelsBySearch(String query) async {
+    final functionName = 'getNovelsBySearch';
 
-    function.addAll(_getFunctionContent('getNovelDetails'));
+    final List<String> function = _getFunctionContent(functionName);
+
+    final functionArgs = {'query': query};
+
+    if (function.isEmpty) throw Exception('Failed to load');
+
+    final firstLine = _getFuncionFirstLine(function);
+
+    final targetUrl = _getPageUrl(function);
+
+    final args = _getArgs(firstLine);
+    if (args.isEmpty) throw Exception('Args not found');
+
+    final annotation = _getAnnotation(firstLine, 'by');
+
+    final selectors = _getSelectors(function);
+
+    switch (annotation) {
+      case 'Url':
+        String url = '';
+
+        for (String arg in args) {
+          url = targetUrl.replaceFirst('@arg[$arg]', functionArgs[arg]!);
+        }
+
+        if (!await _webScraper.loadWebPage(url)) {
+          throw Exception('Failed to load');
+        }
+
+        return _getNovels(selectors);
+      case 'Page':
+        // TODO: Implement by page
+        return _getNovels(selectors);
+      default:
+        throw Exception('Not found a valid annotation');
+    }
+  }
+
+  Future<NovelDetails> getNovelDetails(String novelUrl) async {
+    final List<String> function = _getFunctionContent('getNovelDetails');
 
     if (function.isEmpty) throw Exception('Failed to load');
 
@@ -38,20 +77,21 @@ class KagayakuModule {
   }
 
   NovelFunction _getNovelList(String name) async {
-    List<NovelModel> novels = [];
-    final List<String> function = [];
-
-    function.addAll(_getFunctionContent(name));
+    final List<String> function = _getFunctionContent(name);
 
     if (function.isEmpty) throw Exception('Failed to load');
 
-    final String? url = _getPageUrl(function);
-
-    if (url == null) return novels;
+    final String url = _getPageUrl(function);
 
     if (!await _webScraper.loadWebPage(url)) throw Exception('Failed to load');
 
     final selectors = _getSelectors(function);
+
+    return _getNovels(selectors);
+  }
+
+  List<NovelModel> _getNovels(Map<String, dynamic> selectors) {
+    final List<NovelModel> novels = [];
 
     final sCover = selectors['cover'];
     final sTitle = selectors['title'];
@@ -77,7 +117,7 @@ class KagayakuModule {
   }
 
   String _removeQuotes(String str) {
-    if (str.length <= 2) return "";
+    if (str.length <= 2) return str;
 
     return str.substring(1, str.length - 1);
   }
@@ -95,7 +135,6 @@ class KagayakuModule {
         for (String funcLine in _source) {
           if (funcLine.startsWith('@fun $name(')) {
             canAdd = true;
-            continue;
           }
           if (canAdd && funcLine.startsWith('@return')) {
             canAdd = false;
@@ -118,19 +157,17 @@ class KagayakuModule {
     return false;
   }
 
-  String? _getPageUrl(List<String> function) {
+  String _getPageUrl(List<String> function) {
     String? url;
-
     for (String line in function) {
       if (line.startsWith('@url')) {
-        url = line.substring('@url'.length).trim();
-        break;
+        url = _removeQuotes(line.substring('@url'.length).trim());
       }
     }
 
-    if (url == null) return null;
+    if (url == null) throw Exception('Url not found');
 
-    return _removeQuotes(url);
+    return url;
   }
 
   Map<String, dynamic> _getSelectors(List<String> function) {
@@ -155,5 +192,40 @@ class KagayakuModule {
     }
 
     return selectors;
+  }
+
+  String _getFuncionFirstLine(List<String> function) {
+    for (String line in function) {
+      if (line.startsWith('@fun')) {
+        return line;
+      }
+    }
+
+    return '';
+  }
+
+  String? _getAnnotation(String function, String name) {
+    try {
+      final annotation = function.substring(function.indexOf('@$name')).trim();
+
+      return annotation.substring('@$name'.length).trim();
+    } catch (e) {
+      print(e);
+    }
+
+    return null;
+  }
+
+  List<String> _getArgs(String function) {
+    List<String> args = [];
+    RegExp regex = RegExp(r'@arg\s+(\w+)');
+
+    Iterable<RegExpMatch> matches = regex.allMatches(function);
+
+    for (var match in matches) {
+      args.add(match.group(1)!);
+    }
+
+    return args;
   }
 }

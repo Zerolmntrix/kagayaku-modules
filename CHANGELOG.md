@@ -18,3 +18,9 @@
 - Changed the way to get source url.
 - Returned `null` if the language is not supported.
 - Added `ModuleInfo` class to store module information.
+
+## 1.0.3
+
+### Features
+- Implemented 'get novels by search' functionality.
+- Full support to `@by Url` annotation.

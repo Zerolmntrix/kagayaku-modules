@@ -42,8 +42,8 @@
 // The case is important, @by Url is different from @by url
 // ? You can use the @by Url or @by Page to specify how to get the data
 // The method for page is not implemented yet
-@fun getNovelsBySearch(@arg name) @by Url
-  @url "search/?keyword=@arg[name]"
+@fun getNovelsBySearch(@arg query) @by Url
+  @url "search/?keyword=@arg[query]"
     @var title -> @selector ".novel-list .novel-item"
     @var link -> @selector "h3 a@href"
     @var cover -> @selector ".novel-item-img img@src"
