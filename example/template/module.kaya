@@ -19,6 +19,7 @@
 @status "unknown" -> "unknown"
 
 // ? If you can't find a way to get some data, just return null, except for the search function
+// I have to implement support for empty selectors
 
 @fun getSpotlightNovels()
   @return null
@@ -49,12 +50,16 @@
     @var cover -> @selector ".novel-item-img img@src"
   @return Novel()
 
+// ? You can use the @use Webview annotation to specify that a function should use a WebView to retrieve data.
 
 // ? You need to use Webview if the target page is dynamic or if data retrieval requires JavaScript execution
 // ? If the target page contains dynamic content that cannot be extracted using standard scraping techniques,
 // ? or if JavaScript is necessary to fetch the required data, the @use Webview annotation should be used.
 // ! Do not use the @use Webview annotation for other scenarios where regular scraping suffices.
 // ! Using Webview unnecessarily can impact performance and complexity of your module.
+// ? If you are unsure whether to use Webview, please ask for help in the #modules channel on Discord. when i create the discord server. if i create it...
+
+// ? if can't get some selector, just return an empty string like: @var title -> @selector "h1" -> ""
 
 @fun getNovelDetails(@arg url) @use WebView
   @url @arg[url]

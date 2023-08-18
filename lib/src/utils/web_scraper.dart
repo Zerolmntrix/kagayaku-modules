@@ -1,6 +1,7 @@
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:dio/dio.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'validations.dart';
 
 typedef DataList = List<Map<String, dynamic>>;
@@ -16,11 +17,15 @@ class WebScraper {
 
   Document? _document;
 
-  Future<bool> loadWebPage(String path) async {
+  Future<bool> loadWebPage(String path, bool useWebView) async {
     final endpoint = Uri.encodeFull(_removeUnnecessarySlash(_baseUrl + path));
 
     try {
-      await _loadStaticPage(endpoint);
+      if (useWebView) {
+        await _loadWebViewPage(endpoint);
+      } else {
+        await _loadStaticPage(endpoint);
+      }
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -62,6 +67,28 @@ class WebScraper {
     if (response.statusCode != 200) throw Exception('Error loading page');
 
     _document = parse(response.data);
+  }
+
+  _loadWebViewPage(String endpoint) async {
+    final controller = WebViewController();
+
+    controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) async {
+            final html = await controller.runJavaScriptReturningResult(
+              'document.documentElement.outerHTML',
+            );
+
+            _document = parse(html);
+          },
+          onWebResourceError: (WebResourceError error) {
+            throw Exception('Error loading page');
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse('https://flutter.dev'));
   }
 
   String _removeUnnecessarySlash(String url) {

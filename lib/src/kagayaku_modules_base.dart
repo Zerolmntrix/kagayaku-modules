@@ -22,13 +22,9 @@ class KagayakuModule {
   NovelFunction getPopularNovels() => _getNovelList('getPopularNovels');
 
   NovelFunction getNovelsBySearch(String query) async {
-    final functionName = 'getNovelsBySearch';
-
-    final List<String> function = _getFunctionContent(functionName);
+    final List<String> function = _getFunctionContent('getNovelsBySearch');
 
     final functionArgs = {'query': query};
-
-    if (function.isEmpty) throw Exception('Failed to load');
 
     final firstLine = _getFuncionFirstLine(function);
 
@@ -49,8 +45,8 @@ class KagayakuModule {
           url = targetUrl.replaceFirst('@arg[$arg]', functionArgs[arg]!);
         }
 
-        if (!await _webScraper.loadWebPage(url)) {
-          throw Exception('Failed to load');
+        if (!await _webScraper.loadWebPage(url, _isWebView(function))) {
+          throw Exception('Failed to load $url');
         }
 
         return _getNovels(selectors);
@@ -65,13 +61,20 @@ class KagayakuModule {
   Future<NovelDetails> getNovelDetails(String novelUrl) async {
     final List<String> function = _getFunctionContent('getNovelDetails');
 
-    if (function.isEmpty) throw Exception('Failed to load');
-
     final String url = novelUrl.replaceFirst(_sourceUrl, '');
 
-    if (!await _webScraper.loadWebPage(url)) throw Exception('Failed to load');
+    if (!await _webScraper.loadWebPage(url, _isWebView(function))) {
+      throw Exception('Failed to load $url');
+    }
 
     // final selectors = _getSelectors(function);
+
+    print(
+      _webScraper.getElement(
+        '#manga-chapters-holder .page-content-listing li',
+        [],
+      ),
+    );
 
     return NovelDetails();
   }
@@ -79,11 +82,11 @@ class KagayakuModule {
   NovelFunction _getNovelList(String name) async {
     final List<String> function = _getFunctionContent(name);
 
-    if (function.isEmpty) throw Exception('Failed to load');
-
     final String url = _getPageUrl(function);
 
-    if (!await _webScraper.loadWebPage(url)) throw Exception('Failed to load');
+    if (!await _webScraper.loadWebPage(url, _isWebView(function))) {
+      throw Exception('Failed to load $url');
+    }
 
     final selectors = _getSelectors(function);
 
@@ -145,6 +148,8 @@ class KagayakuModule {
         break;
       }
     }
+
+    if (functionContent.isEmpty) throw Exception('$name not found');
 
     return functionContent;
   }
@@ -227,5 +232,11 @@ class KagayakuModule {
     }
 
     return args;
+  }
+
+  bool _isWebView(List<String> function) {
+    final useAnnotation = _getAnnotation(_getFuncionFirstLine(function), 'use');
+
+    return useAnnotation == 'WebView';
   }
 }
