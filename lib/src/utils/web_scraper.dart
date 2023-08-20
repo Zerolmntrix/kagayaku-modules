@@ -1,7 +1,7 @@
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:dio/dio.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+// import 'package:webview_flutter/webview_flutter.dart';
 import 'validations.dart';
 
 typedef DataList = List<Map<String, dynamic>>;
@@ -69,27 +69,7 @@ class WebScraper {
     _document = parse(response.data);
   }
 
-  _loadWebViewPage(String endpoint) async {
-    final controller = WebViewController();
-
-    controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (_) async {
-            final html = await controller.runJavaScriptReturningResult(
-              'document.documentElement.outerHTML',
-            );
-
-            _document = parse(html);
-          },
-          onWebResourceError: (WebResourceError error) {
-            throw Exception('Error loading page');
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse('https://flutter.dev'));
-  }
+  _loadWebViewPage(String endpoint) async {}
 
   String _removeUnnecessarySlash(String url) {
     RegExp regex = RegExp(r"/{2,}");

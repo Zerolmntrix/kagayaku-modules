@@ -1,4 +1,4 @@
-library;
+library kagayaku_modules;
 
 export 'src/kagayaku_modules_base.dart';
 export 'src/models/novel.dart';
