@@ -24,3 +24,12 @@
 ### Features
 - Implemented 'get novels by search' functionality.
 - Full support to `@by Url` annotation.
+
+## 1.0.4
+
+### Features
+- Added support for `<number>` syntax in @selector.
+
+### Enhancements
+
+- Full support to dynamic sites.

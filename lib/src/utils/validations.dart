@@ -1,3 +1,5 @@
+RegExp numberSyntax = RegExp(r"<\d+>");
+
 class Validation {
   static ValidationReturn isBaseURL(String url) {
     const protocols = ['http', 'https'];

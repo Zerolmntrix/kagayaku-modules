@@ -81,3 +81,12 @@
   @return NovelDetails()
 
 
+// Dart's querySelector doesn't support pseudo selectors like :nth-child(2)
+// If you need to get the second or any other element, you need to use the <number> syntax
+// As a selector that returns two h1 elements: "h1<2>" like in the example below
+// Like this: @var title -> @selector ".titles<2>" this will get the second h1 element
+// You need to put the number between the < and > characters at the end of the selector
+// By the default, the selector will return the first element <1>
+
+
+//    @var status -> @selector ".novel-info .novel-status<2>"/

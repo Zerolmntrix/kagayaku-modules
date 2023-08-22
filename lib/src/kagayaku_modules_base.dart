@@ -60,6 +60,7 @@ class KagayakuModule {
 
   Future<NovelDetails> getNovelDetails(String novelUrl) async {
     final List<String> function = _getFunctionContent('getNovelDetails');
+    Map<String, dynamic> novelData = {};
 
     final String url = novelUrl.replaceFirst(_sourceUrl, '');
 
@@ -67,16 +68,20 @@ class KagayakuModule {
       throw Exception('Failed to load $url');
     }
 
-    // final selectors = _getSelectors(function);
+    final selectors = _getSelectors(function);
 
-    print(
-      _webScraper.getElement(
-        '#manga-chapters-holder .page-content-listing li',
-        [],
-      ),
+    final raw = _getRawData(selectors);
+
+    for (final entry in raw.entries) {
+      novelData[entry.key] = entry.value[0];
+    }
+
+    return NovelDetails(
+      title: _getAttrValue('title', novelData),
+      cover: _getAttrValue('cover', novelData),
+      author: _getAttrValue('author', novelData),
+      status: _getAttrValue('status', novelData),
     );
-
-    return NovelDetails();
   }
 
   NovelFunction _getNovelList(String name) async {
@@ -96,27 +101,31 @@ class KagayakuModule {
   List<NovelModel> _getNovels(Map<String, dynamic> selectors) {
     final List<NovelModel> novels = [];
 
-    final sCover = selectors['cover'];
-    final sTitle = selectors['title'];
-    final sLink = selectors['link'];
+    final raw = _getRawData(selectors);
 
-    final DataList covers = _webScraper.getElement(sCover[0], [sCover[1]]);
-    final DataList titles = _webScraper.getElement(sTitle[0], [sTitle[1]]);
-    final DataList links = _webScraper.getElement(sLink[0], [sLink[1]]);
+    for (int i = 0, len = raw.values.first.length; i < len; i++) {
+      Map<String, dynamic> newData = {};
 
-    for (int i = 0; i < covers.length; i++) {
-      final String cover = covers[i]['attributes'][sCover[1]];
-      final String title = titles[i]['text'];
-      final String link = links[i]['attributes'][sLink[1]];
+      for (final entry in raw.entries) {
+        newData[entry.key] = entry.value[i];
+      }
 
       novels.add(NovelModel(
-        title: title,
-        cover: cover,
-        url: link,
+        title: _getAttrValue('title', newData),
+        cover: _getAttrValue('cover', newData),
+        url: _getAttrValue('link', newData),
       ));
     }
 
     return novels;
+  }
+
+  _getAttrValue(String key, Map<String, dynamic> data) {
+    final Map<String, dynamic> attrs = data[key]['attributes'];
+
+    if (attrs.isEmpty) return data[key]['text'];
+
+    return attrs[attrs.entries.first.key];
   }
 
   String _removeQuotes(String str) {
@@ -175,6 +184,21 @@ class KagayakuModule {
     return url;
   }
 
+  Map<String, dynamic> _getRawData(Map<String, dynamic> selectors) {
+    final Map<String, dynamic> rawData = {};
+
+    for (final selector in selectors.entries) {
+      final value = selector.value[0];
+      final attribute = selector.value[1] ?? '';
+
+      final List<String> attrs = attribute.isEmpty ? [] : [attribute];
+
+      rawData[selector.key] = _webScraper.getElement(value, attrs);
+    }
+
+    return rawData;
+  }
+
   Map<String, dynamic> _getSelectors(List<String> function) {
     Map<String, dynamic> selectors = {};
 
@@ -211,6 +235,8 @@ class KagayakuModule {
 
   String? _getAnnotation(String function, String name) {
     try {
+      if (!function.contains('@$name')) return null;
+
       final annotation = function.substring(function.indexOf('@$name')).trim();
 
       return annotation.substring('@$name'.length).trim();
