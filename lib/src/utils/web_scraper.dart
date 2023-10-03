@@ -69,6 +69,8 @@ class WebScraper {
     if (response.statusCode != 200) throw Exception('Error loading page');
 
     _document = parse(response.data);
+
+    dio.close();
   }
 
   _loadWebViewPage(String endpoint) async {
