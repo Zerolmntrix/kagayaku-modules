@@ -1,0 +1,43 @@
+@source "https://asuralightnovel.com/"
+
+@fun getSpotlightNovels()
+    @url "?s&post_type=wp-manga&m_orderby=views"
+       @var title -> @selector ".tab-content-wrap div.col-8.col-12.col-md-10 div.post-title > h3 > a"
+       @var link -> @selector ".tab-content-wrap div.col-8.col-12.col-md-10 div.post-title > h3 > a@href"
+       @var cover -> @selector ".tab-content-wrap div.col-4.col-12.col-md-2 a > img@data-src"
+    @return Novel()
+
+@fun getLatestNovels()
+    @url "?s&post_type=wp-manga&m_orderby=latest"
+       @var title -> @selector ".tab-content-wrap div.col-8.col-12.col-md-10 div.post-title > h3 > a"
+       @var link -> @selector ".tab-content-wrap div.col-8.col-12.col-md-10 div.post-title > h3 > a@href"
+       @var cover -> @selector ".tab-content-wrap div.col-4.col-12.col-md-2 a > img@data-src"
+    @return Novel()
+
+@fun getPopularNovels()
+    @url "?s&post_type=wp-manga&m_orderby=trending"
+       @var title -> @selector ".tab-content-wrap div.col-8.col-12.col-md-10 div.post-title > h3 > a"
+       @var link -> @selector ".tab-content-wrap div.col-8.col-12.col-md-10 div.post-title > h3 > a@href"
+       @var cover -> @selector ".tab-content-wrap div.col-4.col-12.col-md-2 a > img@data-src"
+    @return Novel()
+
+@fun getNovelsBySearch(@arg query) @by Url
+  @url "?s=@arg[query]&post_type=wp-manga"
+    @var title -> @selector ".tab-content-wrap .tab-summary div.post-title"
+    @var link -> @selector ".tab-content-wrap .tab-summary div.post-title a@href"
+    @var cover -> @selector ".tab-content-wrap div.col-4.col-12.col-md-2 a > img@data-src"
+  @return Novel()
+
+@fun getNovelDetails(@arg url) @use WebView
+  @url "@arg[url]"
+    @var title -> @selector ".profile-manga .post-title h1"
+    @var cover -> @selector ".profile-manga .summary_image img@data-src"
+    @var author -> @selector ".profile-manga .post-content .author-content"
+    @var status -> @selector ".profile-manga .post-content .post-status"
+    @var genres -> @selector ".profile-manga .post-content .genres-content a"
+    @var description -> @selector ".main-col.col-md-8.col-sm-8 .description-summary p"
+    @var chapters -> @selector "#manga-chapters-holder .page-content-listing li"
+    @var chapterName -> @selector "a"
+    @var chapterLink -> @selector "a@href"
+    @var chapterDate -> @selector "span.chapter-release-date i"
+  @return NovelDetails()
