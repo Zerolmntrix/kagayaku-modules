@@ -1,6 +1,14 @@
 [
   {
-    "id": "id",
+    "id": "en.asuralightnovel",
+    "version": "1.0.0"
+  },
+  {
+    "id": "pt.reaperscans",
+    "version": "1.0.0"
+  },
+  {
+    "id": "pt.animecenterbr",
     "version": "1.0.0"
   }
 ]
