@@ -1,4 +1,7 @@
   {
-  "developer": "Zerolmntrix",
-  "baseUrl": "animecenterbr.com"
+    "name": "Anime Center BR",
+    "language": "pt",
+    "icon": "icon.png",
+    "developer": "Zerolmntrix",
+    "baseUrl": "animecenterbr.com"
 }
